@@ -22,16 +22,18 @@ function main(splash)
     wait_for(splash, function()
         return splash:evaljs("document.getElementById('note') !== null")
     end)
-
     return {
-        data = get_info()
+        data = get_info(),
+        contact_info = splash:evaljs("document.getElementById('contact').innerText"),
+        title =  splash:evaljs("document.getElementsByClassName('eventTitle')[0].innerText"),
+        event_date = splash:evaljs("document.getElementById('startEndDates').innerText"),
+        location = splash:evaljs("document.getElementById('location').innerText")
     }
 end
 """
 
 class WhoscoredspiderSpider(scrapy.Spider):
     name = "whoscoredspider"
-    allowed_domains = ["qq.com"]
     start_urls = [
         "https://www.ospe.on.ca/courses#507/PE402-0717"
     ]
@@ -49,7 +51,7 @@ class WhoscoredspiderSpider(scrapy.Spider):
 
     def parse(self, response):
         rs = response.body.decode('unicode_escape')
-        print(type(rs))
-        print (rs.replace("\n",''))
+        print(rs)
+
     
 
