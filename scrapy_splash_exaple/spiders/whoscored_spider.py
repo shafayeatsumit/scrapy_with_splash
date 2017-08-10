@@ -4,7 +4,7 @@ import scrapy
 import json
 from scrapy_splash import SplashRequest
 
-script = """
+script_detail_page = """
 function main(splash)
     assert(splash:go(splash.args.url))
     local get_info = splash:jsfunc([[
@@ -32,26 +32,38 @@ function main(splash)
 end
 """
 
+script_first_page = """
+function main(splash)
+    assert(splash:go(splash.args.url))  
+    function wait_for(splash, condition)
+        while not condition() do
+            splash:wait(0.05)
+        end
+    end
+
+    wait_for(splash, function()
+        return splash:evaljs("document.getElementById('0') !== null")
+    end)
+    return splash:html()
+end
+"""
 class WhoscoredspiderSpider(scrapy.Spider):
     name = "whoscoredspider"
-    start_urls = [
-        "https://www.ospe.on.ca/courses#507/PE402-0717"
-    ]
 
     def start_requests(self):
-        for url in self.start_urls:
-            print("url ===>",url)
-            yield SplashRequest(url, self.parse,
-                endpoint='execute',
+        yield SplashRequest(url= 'https://www.ospe.on.ca/courses', 
+               callback = self.parse,
+               endpoint='execute',
                 args={
-                    'lua_source': script,
+                    'lua_source': script_first_page,
                     'timeout': 90
-                }
+                }            
             )
 
     def parse(self, response):
-        rs = response.body.decode('unicode_escape')
-        print(rs)
+        print("parsing called ++++++++++++++++++++++++")
+        list_of_course = response.xpath('//td/a/@href').extract()
+        print (list_of_course)
+        print (len(list_of_course))
 
-    
 
