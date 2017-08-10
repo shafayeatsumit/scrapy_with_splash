@@ -6,7 +6,9 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
+import random
+from user_agents import agents
+import json
 
 class ScrapySplashExapleSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,

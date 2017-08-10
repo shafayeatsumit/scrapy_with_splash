@@ -3,7 +3,6 @@
 import scrapy
 import json
 from scrapy_splash import SplashRequest
-import codecs
 
 script_detail_page = """
 function main(splash)
@@ -65,7 +64,7 @@ class WhoscoredspiderSpider(scrapy.Spider):
     def parse(self, response):
         print("parsing called ++++++++++++++++++++++++")
         courses_url = response.xpath('//td/a/@href').extract()
-        for url in courses_url[:1]:
+        for url in courses_url:
             current_url = self.root_url+url
             yield SplashRequest(current_url, self.parse_detail,
                 endpoint='execute',
@@ -77,8 +76,11 @@ class WhoscoredspiderSpider(scrapy.Spider):
 
     def parse_detail(self, response):
         #response decoded
-        rs = response.body.decode('unicode_escape')
-        json_obj = json.loads(rs,strict=False)
-        print(json_obj)
-        print(type(json_obj))
-
+        rs = response.data
+        yield {
+            "title" : rs["title"],
+            "event_date" : rs["event_date"],
+            "contact" : rs["contact_info"],
+            "location" : rs["location"],
+            "description" : rs["data"]
+        }
