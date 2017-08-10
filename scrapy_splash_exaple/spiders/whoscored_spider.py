@@ -3,6 +3,7 @@
 import scrapy
 import json
 from scrapy_splash import SplashRequest
+import codecs
 
 script_detail_page = """
 function main(splash)
@@ -49,9 +50,10 @@ end
 """
 class WhoscoredspiderSpider(scrapy.Spider):
     name = "whoscoredspider"
-
+    def __init__(self, *args, **kwargs):     
+        self.root_url = 'https://www.ospe.on.ca/courses'
     def start_requests(self):
-        yield SplashRequest(url= 'https://www.ospe.on.ca/courses', 
+        yield SplashRequest(url= self.root_url , 
                callback = self.parse,
                endpoint='execute',
                 args={
@@ -62,8 +64,21 @@ class WhoscoredspiderSpider(scrapy.Spider):
 
     def parse(self, response):
         print("parsing called ++++++++++++++++++++++++")
-        list_of_course = response.xpath('//td/a/@href').extract()
-        print (list_of_course)
-        print (len(list_of_course))
+        courses_url = response.xpath('//td/a/@href').extract()
+        for url in courses_url[:1]:
+            current_url = self.root_url+url
+            yield SplashRequest(current_url, self.parse_detail,
+                endpoint='execute',
+                args={
+                    'lua_source': script_detail_page,
+                    'timeout': 90
+                }
+            )        
 
+    def parse_detail(self, response):
+        #response decoded
+        rs = response.body.decode('unicode_escape')
+        json_obj = json.loads(rs,strict=False)
+        print(json_obj)
+        print(type(json_obj))
 
